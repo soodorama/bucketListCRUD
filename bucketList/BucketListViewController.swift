@@ -7,17 +7,20 @@
 //
 
 import UIKit
+import CoreData
 
 class BucketListViewController: UITableViewController, AddItemTableViewControllerDelegate {
-    var items = ["go to the moon", "eat a candy bar", "swim in the amazon", "ride a motorbike in tokyo"]
-    
+    var items = [BucketListItem]()
+
+    let managedObjectContext =  (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+
     @IBAction func AddPressed(_ sender: Any) {
         performSegue(withIdentifier: "EditSegue", sender: sender)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        fetchAllItems()
     }
 
     override func didReceiveMemoryWarning() {
@@ -30,11 +33,21 @@ class BucketListViewController: UITableViewController, AddItemTableViewControlle
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ListItemCell", for: indexPath)
-        cell.textLabel?.text = items[indexPath.row]
+        cell.textLabel?.text = items[indexPath.row].text!
         return cell
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        let item = items[indexPath.row]
+        managedObjectContext.delete(item)
+        
+        do {
+            try managedObjectContext.save()
+        }
+        catch {
+            print("\(error)")
+        }
+        
         items.remove(at: indexPath.row)
         tableView.reloadData()
     }
@@ -56,8 +69,19 @@ class BucketListViewController: UITableViewController, AddItemTableViewControlle
             
             let indexPath = send
             let item = items[indexPath.row]
-            addItemTableViewController.item = item
+            addItemTableViewController.item = item.text!
             addItemTableViewController.indexPath = indexPath
+        }
+    }
+    
+    func fetchAllItems() {
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName:"BucketListItem")
+        do {
+            let result = try managedObjectContext.fetch(request)
+            items = result as! [BucketListItem]
+        }
+        catch {
+            print("\(error)")
         }
     }
     
@@ -68,11 +92,22 @@ class BucketListViewController: UITableViewController, AddItemTableViewControlle
     
     func itemSaved(by controller: AddItemTableViewController, with text: String, at indexPath: NSIndexPath?) {
         if let ip = indexPath {
-            items[ip.row] = text
+            let item = items[ip.row]
+            item.text = text
         }
         else {
-            items.append(text)
+            let item = NSEntityDescription.insertNewObject(forEntityName: "BucketListItem", into: managedObjectContext) as! BucketListItem
+            item.text = text
+            items.append(item)
         }
+        
+        do {
+            try managedObjectContext.save()
+        }
+        catch {
+            print("\(error)")
+        }
+        
         tableView.reloadData()
         dismiss(animated: true, completion: nil)
     }
