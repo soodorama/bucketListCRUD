@@ -40,7 +40,6 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="jgP-Mj-bCn" kind="presentation" identifier="AddSegue" id="SIh-dY-sjM"/>
                         <segue destination="jgP-Mj-bCn" kind="presentation" identifier="EditSegue" id="cT4-Zt-HnF"/>
                     </connections>
                 </tableViewController>
@@ -146,7 +145,4 @@
             <point key="canvasLocation" x="2309.5999999999999" y="151.57421289355324"/>
         </scene>
     </scenes>
-    <inferredMetricsTieBreakers>
-        <segue reference="cT4-Zt-HnF"/>
-    </inferredMetricsTieBreakers>
 </document>

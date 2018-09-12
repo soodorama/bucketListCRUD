@@ -12,7 +12,7 @@ class BucketListViewController: UITableViewController, AddItemTableViewControlle
     var items = ["go to the moon", "eat a candy bar", "swim in the amazon", "ride a motorbike in tokyo"]
     
     @IBAction func AddPressed(_ sender: Any) {
-        performSegue(withIdentifier: "AddSegue", sender: nil)
+        performSegue(withIdentifier: "EditSegue", sender: sender)
     }
     
     override func viewDidLoad() {
@@ -34,35 +34,30 @@ class BucketListViewController: UITableViewController, AddItemTableViewControlle
         return cell
     }
     
-//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//
-//    }
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        items.remove(at: indexPath.row)
+        tableView.reloadData()
+    }
     
     override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         performSegue(withIdentifier: "EditSegue", sender: indexPath)
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        items.remove(at: indexPath.row)
-        tableView.reloadData()
-    }
-
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "AddSegue" {
+        if (sender as? UIBarButtonItem) != nil {
             let navigationController = segue.destination as! UINavigationController
             let addItemTableViewController = navigationController.topViewController as! AddItemTableViewController
             addItemTableViewController.delegate = self
         }
-        else if segue.identifier == "EditSegue" {
+        else if let send = sender as? NSIndexPath {
             let navigationController = segue.destination as! UINavigationController
             let addItemTableViewController = navigationController.topViewController as! AddItemTableViewController
             addItemTableViewController.delegate = self
             
-            let indexPath = sender as! NSIndexPath
+            let indexPath = send
             let item = items[indexPath.row]
             addItemTableViewController.item = item
             addItemTableViewController.indexPath = indexPath
-            
         }
     }
     
@@ -72,14 +67,12 @@ class BucketListViewController: UITableViewController, AddItemTableViewControlle
     }
     
     func itemSaved(by controller: AddItemTableViewController, with text: String, at indexPath: NSIndexPath?) {
-//        print("Recieved text from top view: \(text)")
         if let ip = indexPath {
             items[ip.row] = text
         }
         else {
             items.append(text)
         }
-//        items.append(text)
         tableView.reloadData()
         dismiss(animated: true, completion: nil)
     }
